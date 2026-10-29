@@ -3,53 +3,137 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
+from matplotlib.lines import Line2D
 
-HERE=Path(__file__).resolve().parent
-DATA=HERE.parent/'figure_data'
-OUTPUT=HERE.parent/'outputs'
-OUTPUT.mkdir(parents=True,exist_ok=True)
-df=pd.read_csv(DATA / 'figure05_baseline_residuals.csv')
+BASE = Path(__file__).resolve().parent.parent
+DATA = BASE / 'figure_data'
+OUT = BASE / 'outputs'
+OUT.mkdir(exist_ok=True)
+df = pd.read_csv(DATA / 'figure05_baseline_residuals.csv')
 
-INK='#243447'; BLUE='#0072B2'; SKY='#56B4E9'; ORANGE='#E69F00'; VERM='#D55E00'; GREEN='#009E73'; MID='#6B7280'; GRID='#DCE2E8'
-plt.rcParams.update({'font.family':'DejaVu Sans','font.size':8.8,'axes.labelsize':9.2,'axes.titlesize':9.8,'pdf.fonttype':42,'ps.fonttype':42,'savefig.dpi':600})
-fig,axs=plt.subplots(1,2,figsize=(11.2,4.7),gridspec_kw={'width_ratios':[1,1.18]})
+plt.rcParams.update({
+    'font.family': 'DejaVu Sans',
+    'font.size': 8.8,
+    'axes.labelsize': 9.2,
+    'pdf.fonttype': 42,
+    'ps.fonttype': 42,
+    'savefig.dpi': 600,
+})
 
-# (a) Parity plot, deliberately light because the reconstruction is nearly exact.
-ax=axs[0]
-obs=df['observed_hyp3_baseline_m'].to_numpy(); rec=df['reconstructed_pair_baseline_m'].to_numpy()
-lo=min(obs.min(),rec.min()); hi=max(obs.max(),rec.max())
-ax.scatter(obs,rec,s=17,color=BLUE,alpha=.62,edgecolor='white',linewidth=.25)
-ax.plot([lo,hi],[lo,hi],color=INK,lw=1.0,ls='--',label='1:1')
-ax.set_xlabel('Observed HyP3 pair baseline (m)'); ax.set_ylabel('Reconstructed pair baseline (m)')
-ax.set_title('(a) Pair-baseline reconstruction',loc='left',fontweight='bold')
-ax.spines[['top','right']].set_visible(False); ax.grid(color=GRID,lw=.5,alpha=.55)
-ax.set_aspect('equal',adjustable='box')
+# Color-blind-friendly palette (Okabe-Ito inspired)
+BLUE = '#0072B2'
+ORANGE = '#D55E00'
+DARK = '#4D4D4D'
+GRID = '#D9D9D9'
 
-# (b) Residuals through time reveal whether mismatch is systematic.
-ax=axs[1]
+fig, axs = plt.subplots(
+    1, 2,
+    figsize=(11.2, 4.75),
+    gridspec_kw={'width_ratios': [1.0, 1.18]},
+)
+
+# ---- (a) Pair-baseline reconstruction ----
+ax = axs[0]
+obs = df['observed_hyp3_baseline_m'].to_numpy()
+rec = df['reconstructed_pair_baseline_m'].to_numpy()
+lo = min(obs.min(), rec.min())
+hi = max(obs.max(), rec.max())
+pad = (hi - lo) * 0.035
+lo_plot, hi_plot = lo - pad, hi + pad
+
+ax.scatter(
+    obs, rec,
+    s=18,
+    alpha=0.68,
+    color=BLUE,
+    edgecolor='white',
+    linewidth=0.25,
+    zorder=3,
+)
+ax.plot(
+    [lo_plot, hi_plot], [lo_plot, hi_plot],
+    color=DARK,
+    lw=1.15,
+    ls='--',
+    zorder=2,
+)
+ax.set_xlim(lo_plot, hi_plot)
+ax.set_ylim(lo_plot, hi_plot)
+ax.set_xlabel('Observed HyP3 pair baseline (m)')
+ax.set_ylabel('Reconstructed pair baseline (m)')
+ax.set_aspect('equal', adjustable='box')
+ax.spines[['top', 'right']].set_visible(False)
+ax.grid(lw=0.55, color=GRID, alpha=0.75, zorder=0)
+
+# ---- (b) Residuals through time ----
 def midpoint(pair):
-    a,b=pair.split('_')
-    d1=pd.to_datetime(a); d2=pd.to_datetime(b)
-    return d1+(d2-d1)/2
-df['mid_date']=df['pair_id'].map(midpoint)
-df['residual_cm']=df['residual_m']*100.0
-out=np.abs(df['residual_m'])>0.05
-ax.scatter(df.loc[~out,'mid_date'],df.loc[~out,'residual_cm'],s=14,color=SKY,alpha=.58,edgecolor='none',label='|r| ≤ 5 cm')
-ax.scatter(df.loc[out,'mid_date'],df.loc[out,'residual_cm'],s=28,color=VERM,alpha=.9,edgecolor='white',linewidth=.3,label='|r| > 5 cm',zorder=4)
-ax.axhline(0,color=INK,lw=.9)
-ax.axhline(5,color=ORANGE,lw=.8,ls='--',alpha=.75); ax.axhline(-5,color=ORANGE,lw=.8,ls='--',alpha=.75)
-ax.set_xlabel('Interferogram midpoint date'); ax.set_ylabel('Baseline residual (cm)')
-ax.set_title('(b) Network residuals through time',loc='left',fontweight='bold')
-ax.xaxis.set_major_locator(mdates.YearLocator()); ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y'))
-ax.spines[['top','right']].set_visible(False); ax.grid(axis='y',color=GRID,lw=.5,alpha=.55)
-ax.legend(frameon=False,fontsize=7.7,loc='upper left')
+    a, b = pair.split('_')
+    d1 = pd.to_datetime(a)
+    d2 = pd.to_datetime(b)
+    return d1 + (d2 - d1) / 2
 
-rms=np.sqrt(np.mean(df['residual_m']**2)); med=np.median(np.abs(df['residual_m'])); mx=np.max(np.abs(df['residual_m']))
-ax.text(.985,.03,f'RMS = {rms:.4f} m\nMedian |r| = {med:.4f} m\nMax |r| = {mx:.3f} m',transform=ax.transAxes,
-        ha='right',va='bottom',fontsize=8,color=INK,bbox=dict(boxstyle='round,pad=.3',facecolor='white',edgecolor=GRID,alpha=.94))
+ax = axs[1]
+df['mid_date'] = df['pair_id'].map(midpoint)
+df['residual_cm'] = df['residual_m'] * 100
+ax.scatter(
+    df['mid_date'], df['residual_cm'],
+    s=18,
+    alpha=0.72,
+    color=ORANGE,
+    edgecolor='white',
+    linewidth=0.2,
+    zorder=3,
+)
+ax.axhline(0, color=DARK, lw=1.05, zorder=2)
+ax.set_xlabel('Interferogram midpoint date')
+ax.set_ylabel('Baseline residual (cm)')
+ax.xaxis.set_major_locator(mdates.YearLocator())
+ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y'))
+ax.spines[['top', 'right']].set_visible(False)
+ax.grid(axis='y', lw=0.55, color=GRID, alpha=0.75, zorder=0)
 
-fig.tight_layout(w_pad=2.2)
-fig.savefig(OUTPUT / 'Figure_05.png',dpi=600,bbox_inches='tight',facecolor='white')
-fig.savefig(OUTPUT / 'Figure_05.tif',dpi=600,bbox_inches='tight',facecolor='white',pil_kwargs={'compression':'tiff_lzw'})
-fig.savefig(OUTPUT / 'Figure_05.pdf',bbox_inches='tight',facecolor='white')
+# Reserve dedicated space for aligned panel headings and a shared legend.
+fig.subplots_adjust(left=0.085, right=0.985, bottom=0.205, top=0.845, wspace=0.26)
+fig.canvas.draw()
+
+# Panel labels and headings are figure-level text, aligned to each axes' left edge.
+for ax_i, panel, title in [
+    (axs[0], '(a)', 'Pair-baseline reconstruction'),
+    (axs[1], '(b)', 'Reconstruction residuals through time'),
+]:
+    pos = ax_i.get_position()
+    y = pos.y1 + 0.035
+    fig.text(pos.x0, y, panel, fontsize=10.8, fontweight='bold', ha='left', va='bottom')
+    fig.text(pos.x0 + 0.038, y, title, fontsize=9.8, fontweight='bold', ha='left', va='bottom')
+
+# Shared legend below both panels: no overlap with data or axes labels.
+legend_handles = [
+    Line2D([0], [0], marker='o', linestyle='None', markersize=5.5,
+           markerfacecolor=BLUE, markeredgecolor='white', markeredgewidth=0.3,
+           label='HyP3 vs reconstructed pairs'),
+    Line2D([0], [0], color=DARK, lw=1.15, ls='--', label='1:1 reference'),
+    Line2D([0], [0], marker='o', linestyle='None', markersize=5.5,
+           markerfacecolor=ORANGE, markeredgecolor='white', markeredgewidth=0.3,
+           label='Reconstruction residuals'),
+    Line2D([0], [0], color=DARK, lw=1.05, label='Zero-residual reference'),
+]
+fig.legend(
+    handles=legend_handles,
+    loc='lower center',
+    bbox_to_anchor=(0.5, 0.035),
+    ncol=4,
+    frameon=False,
+    handlelength=2.0,
+    columnspacing=1.7,
+    handletextpad=0.55,
+    fontsize=8.4,
+)
+
+for ext, kwargs in [
+    ('png', {'dpi': 600}),
+    ('tif', {'dpi': 600, 'pil_kwargs': {'compression': 'tiff_lzw'}}),
+    ('pdf', {}),
+]:
+    fig.savefig(OUT / f'Figure_05.{ext}', bbox_inches='tight', facecolor='white', **kwargs)
+
 plt.close(fig)

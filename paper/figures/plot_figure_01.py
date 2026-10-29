@@ -1,136 +1,89 @@
 from pathlib import Path
-import pandas as pd
 import matplotlib.pyplot as plt
 from matplotlib.patches import FancyBboxPatch, FancyArrowPatch
+from matplotlib.path import Path as MplPath
+from matplotlib.patches import PathPatch
 
-HERE = Path(__file__).resolve().parent
-DATA = HERE.parent / 'figure_data'
-OUTPUT = HERE.parent / 'outputs'
-OUTPUT.mkdir(parents=True, exist_ok=True)
-nodes = pd.read_csv(DATA / 'figure01_nodes.csv').set_index('id')
+BASE = Path(__file__).resolve().parent.parent
+DATA = BASE / 'figure_data'
+OUT = BASE / 'outputs'
+OUT.mkdir(exist_ok=True)
+INK='#243447'; BLUE='#0072B2'; GREEN='#009E73'; ORANGE='#E69F00'; VERM='#D55E00'
+LIGHT_BLUE='#EAF4FB'; LIGHT_GREEN='#E9F6F1'; LIGHT_ORANGE='#FFF5DF'; LIGHT_GRAY='#F4F6F8'; MID='#657384'
 
-# Colorblind-safe, publication-oriented palette.
-INK = '#243447'
-BLUE = '#0072B2'
-SKY = '#56B4E9'
-GREEN = '#009E73'
-ORANGE = '#E69F00'
-VERMILION = '#D55E00'
-LIGHT_BLUE = '#EAF4FB'
-LIGHT_GREEN = '#E9F6F1'
-LIGHT_ORANGE = '#FFF5DF'
-LIGHT_GRAY = '#F4F6F8'
-MID_GRAY = '#6B7280'
+plt.rcParams.update({'font.family':'DejaVu Sans','font.size':9,'pdf.fonttype':42,'ps.fonttype':42,'savefig.dpi':600})
+fig, ax = plt.subplots(figsize=(11.2,4.7))
+ax.set_xlim(0,1); ax.set_ylim(0,1); ax.axis('off')
 
-plt.rcParams.update({
-    'font.family': 'DejaVu Sans',
-    'font.size': 9,
-    'pdf.fonttype': 42,
-    'ps.fonttype': 42,
-    'savefig.dpi': 600,
-})
-
-fig, ax = plt.subplots(figsize=(11.2, 5.0))
-ax.set_xlim(0, 1)
-ax.set_ylim(0, 1)
-ax.axis('off')
-
-# Four workflow bands make the logic scannable without crossing arrows.
-bands = [
-    (0.015, 0.08, 0.16, 0.80, 'SOURCE', LIGHT_GRAY, INK),
-    (0.19, 0.08, 0.24, 0.80, 'AUDIT & PLAN', LIGHT_BLUE, BLUE),
-    (0.45, 0.08, 0.30, 0.80, 'CONVERT & RECONSTRUCT', LIGHT_GREEN, GREEN),
-    (0.77, 0.08, 0.215, 0.80, 'VALIDATE & EXPORT', LIGHT_ORANGE, ORANGE),
+# Four balanced processing domains.
+bands=[
+    (0.018,0.09,0.155,0.75,'SOURCE',LIGHT_GRAY,INK),
+    (0.188,0.09,0.245,0.75,'AUDIT & PLAN',LIGHT_BLUE,BLUE),
+    (0.448,0.09,0.305,0.75,'CONVERT & RECONSTRUCT',LIGHT_GREEN,GREEN),
+    (0.768,0.09,0.215,0.75,'VALIDATE & EXPORT',LIGHT_ORANGE,ORANGE),
 ]
-for x, y, w, h, title, face, accent in bands:
-    ax.add_patch(FancyBboxPatch((x, y), w, h,
-                                boxstyle='round,pad=0.006,rounding_size=0.018',
-                                facecolor=face, edgecolor='none', zorder=0))
-    ax.add_patch(FancyBboxPatch((x, y), 0.008, h,
-                                boxstyle='round,pad=0,rounding_size=0.006',
-                                facecolor=accent, edgecolor='none', zorder=1))
-    ax.text(x + 0.018, y + h - 0.045, title, color=accent,
-            fontsize=8.4, fontweight='bold', va='top')
+for x,y,w,h,title,face,accent in bands:
+    ax.add_patch(FancyBboxPatch((x,y),w,h,boxstyle='round,pad=.006,rounding_size=.018',facecolor=face,edgecolor='none',zorder=0))
+    ax.add_patch(FancyBboxPatch((x,y),.008,h,boxstyle='round,pad=0,rounding_size=.006',facecolor=accent,edgecolor='none',zorder=1))
+    ax.text(x+.018,y+h-.045,title,va='top',fontsize=8.6,fontweight='bold',color=accent,zorder=5)
 
-# Manual positions chosen for a clean left-to-right narrative.
-pos = {
-    'A': (0.095, 0.48),
-    'B': (0.305, 0.64),
-    'C': (0.305, 0.34),
-    'D': (0.555, 0.64),
-    'E': (0.655, 0.34),
-    'F': (0.835, 0.64),
-    'G': (0.895, 0.34),
+# A single, ordered processing path prevents crossed/hidden arrows.
+pos={
+    'A':(.096,.48),
+    'B':(.310,.62), 'C':(.310,.31),
+    'D':(.600,.62), 'E':(.600,.31),
+    'F':(.875,.62), 'G':(.875,.31),
 }
-box_cfg = {
-    'A': (0.125, 0.18, 'white', INK),
-    'B': (0.18, 0.16, 'white', BLUE),
-    'C': (0.18, 0.16, 'white', BLUE),
-    'D': (0.205, 0.16, 'white', GREEN),
-    'E': (0.205, 0.16, 'white', GREEN),
-    'F': (0.16, 0.16, 'white', ORANGE),
-    'G': (0.16, 0.16, 'white', VERMILION),
+box_cfg={
+    'A':(.135,.205,INK),'B':(.190,.185,BLUE),'C':(.190,.185,BLUE),
+    'D':(.225,.185,GREEN),'E':(.225,.185,GREEN),'F':(.165,.185,ORANGE),'G':(.165,.185,VERM)
+}
+content={
+    'A':('HyP3 GAMMA\nproducts','phase • coherence\namplitude • elevation\nlook vectors'),
+    'B':('Preflight &\nnetwork audit','inventory • footprint • graph'),
+    'C':('Common-reference\nplan','candidate scoring • reusable plan'),
+    'D':('Common-grid\nconversion','phase harmonization • coherence scaling'),
+    'E':('Network &\ngeometry','baseline least squares • viewing geometry'),
+    'F':('Validation &\nprovenance','structure • completeness • audit trail'),
+    'G':('LiCSBAS2-ready\nGEOC','pair stack • metadata • baselines'),
 }
 
-for nid, (x, y) in pos.items():
-    w, h, face, edge = box_cfg[nid]
-    ax.add_patch(FancyBboxPatch((x - w/2, y - h/2), w, h,
-                                boxstyle='round,pad=0.012,rounding_size=0.020',
-                                facecolor=face, edgecolor=edge, linewidth=1.4, zorder=3))
-    label = nodes.loc[nid, 'label']
-    label_overrides = {
-        'B':'Preflight &\nnetwork audit',
-        'C':'Common-reference\nplanning',
-        'D':'Common grid &\nphase/coherence conversion',
-        'E':'Baseline inversion &\nancillary reconstruction',
-        'F':'Validation &\nprovenance',
-        'G':'LiCSBAS2-ready\nGEOC',
-    }
-    label = label_overrides.get(nid, label)
-    ax.text(x, y, label, ha='center', va='center', color=INK,
-            fontsize=9.1, fontweight='semibold' if nid in {'A','G'} else 'normal',
-            linespacing=1.25, zorder=4)
+for nid,(x,y) in pos.items():
+    w,h,edge=box_cfg[nid]
+    ax.add_patch(FancyBboxPatch((x-w/2,y-h/2),w,h,boxstyle='round,pad=.010,rounding_size=.018',facecolor='white',edgecolor=edge,linewidth=1.45,zorder=4))
+    title,sub=content[nid]
+    ax.text(x,y+.035,title,ha='center',va='center',color=INK,fontsize=7.75,fontweight='bold' if nid in {'A','G'} else 'semibold',zorder=5)
+    ax.text(x,y-.050,sub,ha='center',va='center',color=MID,fontsize=5.95,linespacing=1.25,zorder=5)
 
-# Clean orthogonal flow. Secondary arrows are dashed.
-def arrow(a, b, color, rad=0.0, dashed=False):
-    x1, y1 = pos[a]; x2, y2 = pos[b]
-    ax.add_patch(FancyArrowPatch((x1, y1), (x2, y2),
-                                arrowstyle='-|>', mutation_scale=12,
-                                connectionstyle=f'arc3,rad={rad}',
-                                linewidth=1.35, color=color,
-                                linestyle='--' if dashed else '-',
-                                shrinkA=46, shrinkB=46, zorder=2))
+# Orthogonal arrows routed only through whitespace between cards.
+def ortho_arrow(points, color):
+    verts=[]; codes=[]
+    for i,(x,y) in enumerate(points):
+        verts.append((x,y)); codes.append(MplPath.MOVETO if i==0 else MplPath.LINETO)
+    path=MplPath(verts,codes)
+    ax.add_patch(PathPatch(path,fill=False,lw=1.55,edgecolor=color,capstyle='round',joinstyle='round',zorder=2))
+    # arrowhead on final segment
+    x1,y1=points[-2]; x2,y2=points[-1]
+    ax.add_patch(FancyArrowPatch((x1,y1),(x2,y2),arrowstyle='-|>',mutation_scale=11.5,linewidth=0,color=color,zorder=3))
 
-arrow('A','B',BLUE,rad=0.04)
-arrow('A','C',BLUE,rad=-0.04)
-arrow('B','D',GREEN)
-arrow('C','D',GREEN,rad=-0.08)
-arrow('C','E',GREEN)
-arrow('D','E',GREEN,rad=-0.10,dashed=True)
-arrow('D','F',ORANGE)
-arrow('E','F',ORANGE,rad=0.08)
-arrow('F','G',VERMILION,rad=-0.06)
+# A -> B
+wa,ha,_=box_cfg['A']; wb,hb,_=box_cfg['B']
+ortho_arrow([(pos['A'][0]+wa/2,pos['A'][1]),(.190,pos['A'][1]),(.190,pos['B'][1]),(pos['B'][0]-wb/2-.006,pos['B'][1])],BLUE)
+# B -> C (vertical)
+ortho_arrow([(pos['B'][0],pos['B'][1]-hb/2), (pos['C'][0],pos['C'][1]+box_cfg['C'][1]/2+.006)],BLUE)
+# C -> D
+wc,hc,_=box_cfg['C']; wd,hd,_=box_cfg['D']
+ortho_arrow([(pos['C'][0]+wc/2,pos['C'][1]),(.445,pos['C'][1]),(.445,pos['D'][1]),(pos['D'][0]-wd/2-.006,pos['D'][1])],GREEN)
+# D -> E
+ortho_arrow([(pos['D'][0],pos['D'][1]-hd/2),(pos['E'][0],pos['E'][1]+box_cfg['E'][1]/2+.006)],GREEN)
+# E -> F
+we,he,_=box_cfg['E']; wf,hf,_=box_cfg['F']
+ortho_arrow([(pos['E'][0]+we/2,pos['E'][1]),(.758,pos['E'][1]),(.758,pos['F'][1]),(pos['F'][0]-wf/2-.006,pos['F'][1])],ORANGE)
+# F -> G
+ortho_arrow([(pos['F'][0],pos['F'][1]-hf/2),(pos['G'][0],pos['G'][1]+box_cfg['G'][1]/2+.006)],VERM)
 
-# Small evidence labels reinforce what each stage produces.
-ax.text(0.305, 0.50, 'inventory • network • footprints', ha='center', va='center',
-        fontsize=7.6, color=MID_GRAY)
-ax.text(0.600, 0.49, 'common grid • phase datum • baselines • E/N/U', ha='center', va='center',
-        fontsize=7.6, color=MID_GRAY)
-ax.text(0.865, 0.49, 'QC • provenance • restart-safe outputs', ha='center', va='center',
-        fontsize=7.6, color=MID_GRAY)
-
-# Persistent provenance lane.
-ax.plot([0.20, 0.965], [0.145, 0.145], color=MID_GRAY, linewidth=0.8, alpha=0.5)
-ax.text(0.205, 0.118, 'Machine-readable audit trail: plan → offsets → conversion records → validation',
-        ha='left', va='top', fontsize=7.8, color=MID_GRAY)
-
-ax.text(0.015, 0.965, 'HyP3-to-LiCSBAS processing architecture',
-        ha='left', va='top', fontsize=13, fontweight='bold', color=INK)
-ax.text(0.015, 0.925,
-        'Scientific transformations are separated from downstream LiCSBAS2 quality control.',
-        ha='left', va='top', fontsize=9, color=MID_GRAY)
-
-fig.savefig(OUTPUT / 'Figure_01.png', dpi=600, bbox_inches='tight', facecolor='white')
-fig.savefig(OUTPUT / 'Figure_01.tif', dpi=600, bbox_inches='tight', facecolor='white',pil_kwargs={'compression':'tiff_lzw'})
-fig.savefig(OUTPUT / 'Figure_01.pdf', bbox_inches='tight', facecolor='white')
+ax.text(.018,.955,'HyP3-to-LiCSBAS processing architecture',ha='left',va='top',fontsize=13.2,fontweight='bold',color=INK)
+fig.savefig(OUT/'Figure_01.png',dpi=600,bbox_inches='tight',facecolor='white')
+fig.savefig(OUT/'Figure_01.tif',dpi=600,bbox_inches='tight',facecolor='white',pil_kwargs={'compression':'tiff_lzw'})
+fig.savefig(OUT/'Figure_01.pdf',bbox_inches='tight',facecolor='white')
 plt.close(fig)

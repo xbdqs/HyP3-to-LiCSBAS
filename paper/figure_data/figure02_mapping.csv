@@ -1,9 +1,9 @@
 concept,hyp3_input,licsbas_output,operation
 Unwrapped phase,*_unw_phase.tif,YYYYMMDD_YYYYMMDD.geo.unw.tif,Warp + common-reference subtraction
 Coherence,*_corr.tif,YYYYMMDD_YYYYMMDD.geo.cc.tif,Warp; scale 0–1 to uint8 0–255
-Amplitude,*_amp.tif,*.geo.mli.tif,Warp representative reference-granule sigma0 power
+Amplitude,*_amp.tif,*.geo.mli.tif,Warp representative amplitude raster
 Processing DEM,*_dem.tif,*.geo.hgt.tif,Warp processing DEM
 Look geometry,*_lv_theta.tif + *_lv_phi.tif,*.geo.E/N/U.tif,Convert angles to unit LOS components
 Pair baseline,Baseline in parameter .txt,baselines,Network least-squares inversion
-Acquisition metadata,"UTCTime, Heading, slant range, DEM source",metadata.txt,Direct or transparently derived values only
-QC/provenance,HyP3 parameters + adapter diagnostics,_hyp3lics/*,Audit trail; no unsupported values fabricated
+Acquisition metadata,"UTCTime, Heading, slant range, DEM source",metadata.txt,Direct + transparently derived fields
+QC/provenance,HyP3 parameters + adapter diagnostics,_hyp3lics/*,Audit trail + transformation records

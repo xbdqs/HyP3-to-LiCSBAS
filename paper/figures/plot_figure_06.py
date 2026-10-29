@@ -1,66 +1,51 @@
 from pathlib import Path
 import pandas as pd
+import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.patches import FancyBboxPatch, Circle
 
-HERE=Path(__file__).resolve().parent
-DATA=HERE.parent/'figure_data'
-OUTPUT=HERE.parent/'outputs'
-OUTPUT.mkdir(parents=True,exist_ok=True)
-m=pd.read_csv(DATA / 'figure06_validation_metrics.csv')
-p=pd.read_csv(DATA / 'figure06_platform_tests.csv')
-
-INK='#243447'; BLUE='#0072B2'; GREEN='#009E73'; ORANGE='#E69F00'; VERM='#D55E00'; SKY='#56B4E9'; MID='#6B7280'; GRID='#DCE2E8'; LIGHT='#F7F9FB'; LIGHT_GREEN='#E9F6F1'; LIGHT_BLUE='#EAF4FB'
+BASE=Path(__file__).resolve().parent.parent
+DATA=BASE/'figure_data'
+OUT=BASE/'outputs'
+OUT.mkdir(exist_ok=True)
+p=pd.read_csv(DATA/'figure06_platform_tests.csv')
+INK='#243447'; GREEN='#009E73'; ORANGE='#E69F00'; MID='#6B7280'; LIGHT='#F7F9FB'; LIGHT_GREEN='#E9F6F1'; LIGHT_BLUE='#EAF4FB'; BORDER='#E1E6EB'
 plt.rcParams.update({'font.family':'DejaVu Sans','font.size':8.8,'pdf.fonttype':42,'ps.fonttype':42,'savefig.dpi':600})
-fig=plt.figure(figsize=(11.2,5.7))
-gs=fig.add_gridspec(1,2,width_ratios=[1.08,.92],wspace=.20)
+fig=plt.figure(figsize=(11.2,5.25)); gs=fig.add_gridspec(1,2,width_ratios=[1.08,.92],wspace=.20)
 
-# (a) Validation gates: a visual scorecard, not a raw table.
-ax=fig.add_subplot(gs[0,0]); ax.set_xlim(0,1); ax.set_ylim(0,1); ax.axis('off')
-ax.text(.02,.965,'(a) Real MGX production validation',fontsize=10.7,fontweight='bold',color=INK,va='top')
-ax.text(.02,.915,'Readiness gates',fontsize=8.3,fontweight='bold',color=BLUE,va='top')
-rows=[
-    ('Pair products','504 / 504','complete'),
-    ('Common-referenced','504 / 504','complete'),
-    ('Ancillary missing','0','none'),
-    ('Ancillary problems','0','none'),
-    ('Baseline rank','181 / 181','full rank'),
-    ('Full GEOC readiness','true','ready'),
-]
-y=.84
-for label,val,note in rows:
-    ax.add_patch(FancyBboxPatch((.02,y-.045),.96,.075,boxstyle='round,pad=.006,rounding_size=.012',facecolor=LIGHT,edgecolor='none'))
-    ax.add_patch(Circle((.055,y-.007),.015,facecolor=GREEN,edgecolor='none'))
-    ax.text(.055,y-.007,'✓',ha='center',va='center',fontsize=8,color='white',fontweight='bold')
-    ax.text(.09,y,label,va='center',fontsize=8.4,color=INK)
-    ax.text(.72,y,val,va='center',ha='right',fontsize=8.5,color=INK,fontweight='bold')
-    ax.text(.95,y,note,va='center',ha='right',fontsize=7.5,color=MID)
-    y-=.105
+# Shared panel background bounds make panels (a) and (b) visually equal in height.
+def panel_background(ax):
+    ax.set_xlim(0,1); ax.set_ylim(0,1); ax.axis('off')
+    ax.add_patch(FancyBboxPatch((.005,.035),.99,.885,boxstyle='round,pad=.008,rounding_size=.018',facecolor='white',edgecolor=BORDER,linewidth=.8,zorder=0))
 
-ax.text(.02,.19,'Numerical diagnostics',fontsize=8.3,fontweight='bold',color=ORANGE,va='top')
-diag=[('ENU median norm','1.000000'),('ENU max norm error','1.19 × 10⁻⁷'),('Baseline RMS residual','0.0155 m')]
-y=.125
-for label,val in diag:
-    ax.text(.05,y,label,va='center',fontsize=8.0,color=INK)
-    ax.text(.95,y,val,va='center',ha='right',fontsize=8.2,color=ORANGE,fontweight='bold')
-    y-=.055
+ax=fig.add_subplot(gs[0,0]); panel_background(ax)
+ax.text(.025,.965,'(a) Production-stack validation',fontsize=10.7,fontweight='bold',color=INK,va='top')
+rows=[('Pair products','504 / 504'),('Common-referenced','504 / 504'),('Ancillary missing','0'),('Ancillary problems','0'),('Baseline rank','181 / 181'),('Full GEOC readiness','true')]
+y_centers=np.linspace(.825,.395,len(rows))
+for (label,val),y in zip(rows,y_centers):
+    ax.add_patch(FancyBboxPatch((.03,y-.035),.94,.070,boxstyle='round,pad=.006,rounding_size=.012',facecolor=LIGHT,edgecolor='none'))
+    ax.add_patch(Circle((.065,y),.014,facecolor=GREEN,edgecolor='none')); ax.text(.065,y,'✓',ha='center',va='center',fontsize=7.7,color='white',fontweight='bold')
+    ax.text(.10,y,label,va='center',fontsize=8.35,color=INK); ax.text(.94,y,val,va='center',ha='right',fontsize=8.65,color=INK,fontweight='bold')
 
-# (b) Portability tests shown as cards with backend emphasis.
-ax2=fig.add_subplot(gs[0,1]); ax2.set_xlim(0,1); ax2.set_ylim(0,1); ax2.axis('off')
-ax2.text(.02,.965,'(b) Portability and plotting-backend tests',fontsize=10.7,fontweight='bold',color=INK,va='top')
-y=.855
-for r in p.itertuples():
+ax.text(.03,.305,'Numerical diagnostics',fontsize=8.3,fontweight='bold',color=ORANGE,va='top')
+metrics=[('East/north/up\nmedian norm','1.000000'),('Maximum norm error','1.19 × 10⁻⁷'),('Baseline residual RMS','0.0155 m')]
+for i,(lab,val) in enumerate(metrics):
+    x=.03+i*.318
+    ax.add_patch(FancyBboxPatch((x,.085),.295,.155,boxstyle='round,pad=.007,rounding_size=.012',facecolor='#FFF8E8',edgecolor='none'))
+    ax.text(x+.015,.197,lab,fontsize=7.0,color=MID,va='top'); ax.text(x+.015,.116,val,fontsize=8.45,color=ORANGE,fontweight='bold',va='bottom')
+
+ax2=fig.add_subplot(gs[0,1]); panel_background(ax2)
+ax2.text(.025,.965,'(b) Portability tests',fontsize=10.7,fontweight='bold',color=INK,va='top')
+y_centers=np.linspace(.81,.19,len(p))
+for r,y in zip(p.itertuples(),y_centers):
+    env_label = 'Windows production stack' if 'Windows' in r.environment else r.environment
     face=LIGHT_BLUE if 'Windows' in r.environment else LIGHT_GREEN
-    edge=BLUE if 'Windows' in r.environment else GREEN
-    ax2.add_patch(FancyBboxPatch((.02,y-.065),.96,.105,boxstyle='round,pad=.008,rounding_size=.014',facecolor=face,edgecolor='none'))
-    ax2.add_patch(Circle((.93,y-.012),.018,facecolor=GREEN,edgecolor='none'))
-    ax2.text(.93,y-.012,'✓',ha='center',va='center',fontsize=9,color='white',fontweight='bold')
-    ax2.text(.055,y+.010,r.environment,fontsize=8.3,fontweight='bold',color=INK,va='center')
-    ax2.text(.055,y-.025,f'{r.python}  |  {r.plot_backend}',fontsize=7.45,color=MID,va='center')
-    y-=.145
-ax2.text(.02,.08,'The plotting fallback changes presentation only; scientific rasters and metadata use the same code path.',fontsize=7.7,color=MID,va='top',wrap=True)
+    ax2.add_patch(FancyBboxPatch((.03,y-.055),.94,.110,boxstyle='round,pad=.008,rounding_size=.014',facecolor=face,edgecolor='none'))
+    ax2.add_patch(Circle((.925,y),.017,facecolor=GREEN,edgecolor='none')); ax2.text(.925,y,'✓',ha='center',va='center',fontsize=8.7,color='white',fontweight='bold')
+    ax2.text(.065,y+.018,env_label,fontsize=8.2,fontweight='bold',color=INK,va='center')
+    ax2.text(.065,y-.020,f'{r.python}  |  {r.plot_backend}',fontsize=7.35,color=MID,va='center')
 
-fig.savefig(OUTPUT / 'Figure_06.png',dpi=600,bbox_inches='tight',facecolor='white')
-fig.savefig(OUTPUT / 'Figure_06.tif',dpi=600,bbox_inches='tight',facecolor='white',pil_kwargs={'compression':'tiff_lzw'})
-fig.savefig(OUTPUT / 'Figure_06.pdf',bbox_inches='tight',facecolor='white')
+fig.savefig(OUT/'Figure_06.png',dpi=600,bbox_inches='tight',facecolor='white')
+fig.savefig(OUT/'Figure_06.tif',dpi=600,bbox_inches='tight',facecolor='white',pil_kwargs={'compression':'tiff_lzw'})
+fig.savefig(OUT/'Figure_06.pdf',bbox_inches='tight',facecolor='white')
 plt.close(fig)
