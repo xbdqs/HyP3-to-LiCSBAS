@@ -1,0 +1,42 @@
+name: Bug report
+description: Report a reproducible problem in HyP3-to-LiCSBAS
+title: "[Bug]: "
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: "Please remove credentials and restricted data before posting logs."
+  - type: input
+    id: os
+    attributes:
+      label: Operating system
+      placeholder: Windows 11 / Ubuntu 24.04 / WSL
+    validations:
+      required: true
+  - type: input
+    id: python
+    attributes:
+      label: Python and Rasterio/GDAL versions
+      placeholder: Python 3.11, Rasterio 1.4.4, GDAL 3.10.3
+    validations:
+      required: true
+  - type: textarea
+    id: command
+    attributes:
+      label: Command used
+      render: shell
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: What happened?
+      description: Include the traceback and the smallest relevant validation/preflight excerpt.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true

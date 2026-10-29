@@ -1,0 +1,23 @@
+name: Feature request
+description: Suggest a scientifically justified extension
+title: "[Feature]: "
+labels: [enhancement]
+body:
+  - type: textarea
+    id: usecase
+    attributes:
+      label: Scientific or operational use case
+      description: Describe the workflow limitation the feature would address.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed behavior
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Relevant format/specification references
+      description: Link to official product documentation when applicable.
