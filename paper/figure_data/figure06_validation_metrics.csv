@@ -1,0 +1,9 @@
+metric,observed,target_or_reference,type
+IFGs converted,504.0,504.0,count
+IFGs common-referenced,504.0,504.0,count
+Ancillary files missing,0.0,0.0,count
+Ancillary problems,0.0,0.0,count
+ENU median norm,1.0,1.0,value
+ENU max norm error,1.1920928955078125e-07,0.0,value
+Baseline rank,181.0,181.0,count
+Baseline RMS residual (m),0.01553419805392047,0.0,value

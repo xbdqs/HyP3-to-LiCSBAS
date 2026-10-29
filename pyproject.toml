@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "hyp3-to-licsbas"
+version = "1.0.1"
+description = "Convert ASF HyP3 GAMMA Sentinel-1 InSAR stacks to LiCSBAS2-ready GEOC packages."
+authors = [{name = "Qingsong Du"}]
+readme = "README.md"
+license = {file = "LICENSE"}
+keywords = ["InSAR", "Sentinel-1", "HyP3", "LiCSBAS", "SBAS", "remote sensing"]
+requires-python = ">=3.10"
+dependencies = [
+  "numpy>=1.26,<3",
+  "rasterio>=1.4,<2",
+]
+
+[project.optional-dependencies]
+plot = ["matplotlib>=3.8,<4", "pandas>=2.0,<3"]
+
+[project.scripts]
+hyp3lics = "hyp3lics:main"
+
+[tool.setuptools]
+py-modules = ["hyp3lics"]
+
+[project.urls]
+Homepage = "https://github.com/xbdqs/HyP3-to-LiCSBAS"
+Repository = "https://github.com/xbdqs/HyP3-to-LiCSBAS"
+Issues = "https://github.com/xbdqs/HyP3-to-LiCSBAS/issues"
+

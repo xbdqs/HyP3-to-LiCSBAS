@@ -1,0 +1,10 @@
+cff-version: 1.2.0
+message: "If you use HyP3-to-LiCSBAS, please cite this software."
+title: "HyP3-to-LiCSBAS"
+version: "1.0.1"
+date-released: 2026-10-28
+license: MIT
+repository-code: "https://github.com/xbdqs/HyP3-to-LiCSBAS"
+authors:
+  - family-names: "Du"
+    given-names: "Qingsong"

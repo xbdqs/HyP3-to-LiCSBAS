@@ -1,0 +1,6 @@
+environment,python,geospatial_stack,plot_backend,result
+Windows real MGX,Python 3.11.15,Rasterio 1.4.4 / GDAL 3.10.3,stdlib fallback,PASS
+Linux synthetic,Python 3.13.5,Rasterio 1.5.0 / GDAL 3.12.1,matplotlib,PASS
+Linux synthetic,Python 3.13.5,Rasterio 1.5.0 / GDAL 3.12.1,stdlib,PASS
+Linux synthetic,Python 3.13.5,Rasterio 1.5.0 / GDAL 3.12.1,auto; Matplotlib healthy,PASS
+Linux synthetic,Python 3.13.5,Rasterio 1.5.0 / GDAL 3.12.1,auto; Matplotlib disabled,PASS

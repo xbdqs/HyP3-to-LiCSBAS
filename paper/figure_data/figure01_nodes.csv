@@ -1,0 +1,8 @@
+id,label,type,x,y
+A,HyP3 GAMMA ZIPs,input,0.09,0.5
+B,Preflight & network audit,process,0.25,0.72
+C,Common-reference planning,process,0.25,0.28
+D,Common grid & phase/coherence conversion,process,0.5,0.72
+E,Baseline inversion & ancillary reconstruction,process,0.5,0.28
+F,Validation & provenance,process,0.75,0.5
+G,LiCSAR-like GEOC,output,0.91,0.5

@@ -1,0 +1,26 @@
+{
+  "@context": "https://doi.org/10.5063/schema/codemeta-2.0",
+  "@type": "SoftwareSourceCode",
+  "name": "HyP3-to-LiCSBAS",
+  "version": "1.0.1",
+  "description": "Convert ASF HyP3 GAMMA Sentinel-1 InSAR products into LiCSBAS2-ready GEOC stacks with explicit scientific-semantic transformations and validation.",
+  "codeRepository": "https://github.com/xbdqs/HyP3-to-LiCSBAS",
+  "url": "https://github.com/xbdqs/HyP3-to-LiCSBAS",
+  "issueTracker": "https://github.com/xbdqs/HyP3-to-LiCSBAS/issues",
+  "license": "https://spdx.org/licenses/MIT.html",
+  "programmingLanguage": "Python",
+  "runtimePlatform": "Python >= 3.10",
+  "operatingSystem": [
+    "Windows",
+    "Linux",
+    "WSL"
+  ],
+  "author": [
+    {
+      "@type": "Person",
+      "givenName": "Qingsong",
+      "familyName": "Du",
+      "name": "Qingsong Du"
+    }
+  ]
+}
